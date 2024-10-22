@@ -50,24 +50,23 @@ export class RelatedLogsScene extends SceneObjectBase<RelatedLogsSceneState> {
   }
 
   private onActivate() {
-    fetchAndExtractLokiRecordingRules()
-      .then((rules) => this.setState({ lokiRecordingRules: rules }))
-      .then(() => {
-        const selectedMetric = sceneGraph.interpolate(this, VAR_METRIC_EXPR);
-        const lokiDs = getLogsUidOfMetric(selectedMetric, this.state.lokiRecordingRules);
-        this.setState({
-          $variables: new SceneVariableSet({
-            variables: [
-              new CustomVariable({
-                name: VAR_LOGS_DATASOURCE,
-                label: 'Logs data source',
-                query: lokiDs?.map((ds) => `${ds.name} : ${ds.uid}`).join(', '),
-              }),
-            ],
-          }),
-          controls: [new VariableValueSelectors({ layout: 'vertical' })],
-        });
+    fetchAndExtractLokiRecordingRules().then((lokiRecordingRules) => {
+      const selectedMetric = sceneGraph.interpolate(this, VAR_METRIC_EXPR);
+      const lokiDs = getLogsUidOfMetric(selectedMetric, lokiRecordingRules);
+      this.setState({
+        $variables: new SceneVariableSet({
+          variables: [
+            new CustomVariable({
+              name: VAR_LOGS_DATASOURCE,
+              label: 'Logs data source',
+              query: lokiDs?.map((ds) => `${ds.name} : ${ds.uid}`).join(','),
+            }),
+          ],
+        }),
+        controls: [new VariableValueSelectors({ layout: 'vertical' })],
+        lokiRecordingRules,
       });
+    });
   }
 
   protected _variableDependency = new VariableDependencyConfig(this, {
